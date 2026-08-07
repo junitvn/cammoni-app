@@ -19,7 +19,11 @@ function DeepLinkRedirect() {
 
   useEffect(() => {
     const tx = search.get('tx')
-    if (tx) navigate(`/transactions/${tx}`, { replace: true })
+    if (!tx) return
+    // Replace the /?tx= landing entry with Home, then push the detail screen on top,
+    // so the back button has somewhere to go instead of exiting the Mini App.
+    navigate('/', { replace: true })
+    navigate(`/transactions/${tx}`)
   }, [search, navigate])
 
   return null
