@@ -21,7 +21,19 @@ export function initTelegram(): void {
   safeCall(() => WebApp.expand())
 }
 
+// @twa-dev/sdk reads location.hash exactly once, at import time. On native
+// Telegram clients the tgWebAppData hash is set slightly *after* that (the
+// SDK has no hashchange listener to catch it), so WebApp.initData ends up
+// permanently empty even though the real data is sitting in the URL. Parse
+// it directly instead, live, whenever this is called.
 export function getInitData(): string {
+  try {
+    const hash = window.location.hash.replace(/^#/, '')
+    const fromHash = new URLSearchParams(hash).get('tgWebAppData')
+    if (fromHash) return fromHash
+  } catch {
+    // fall through to the SDK
+  }
   try {
     return WebApp.initData ?? ''
   } catch {

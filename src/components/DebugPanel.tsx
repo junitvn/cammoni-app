@@ -9,6 +9,13 @@ export default function DebugPanel() {
   const [open, setOpen] = useState(false)
   const log = useSyncExternalStore(subscribe, getSnapshot)
   const initData = getInitData()
+  const parsedUser = (() => {
+    try {
+      return new URLSearchParams(initData).get('user')
+    } catch {
+      return null
+    }
+  })()
 
   if (!open) {
     return (
@@ -72,9 +79,7 @@ export default function DebugPanel() {
         <div>WebApp.version: {WebApp.version ?? '(none)'}</div>
         <div>initData length: {initData.length}</div>
         <div style={{ wordBreak: 'break-all' }}>initData raw: {initData || '(empty)'}</div>
-        <div style={{ wordBreak: 'break-all' }}>
-          initDataUnsafe.user: {JSON.stringify(WebApp.initDataUnsafe?.user) ?? '(none)'}
-        </div>
+        <div style={{ wordBreak: 'break-all' }}>parsed user (from initData): {parsedUser ?? '(none)'}</div>
       </div>
 
       <div>
