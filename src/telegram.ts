@@ -1,11 +1,12 @@
 import { useEffect } from 'react'
 import WebApp from '@twa-dev/sdk'
 
-// The telegram-web-app.js script (loaded in index.html so initData works for real
-// Telegram clients) also installs a partial window.Telegram.WebApp stub when opened
-// in a plain browser — enough to look "present" but missing real methods like
-// .ready(). Every call below is wrapped so a mismatched/incomplete client never
-// crashes the app; at worst these become no-ops.
+// @twa-dev/sdk bundles its own copy of telegram-web-app.js and parses initData
+// from location.hash the first time it's imported — don't also load the official
+// telegram.org script in index.html, it consumes/clears the hash first and leaves
+// the SDK with an empty stub. Outside Telegram there's no WebApp at all, so every
+// call below is wrapped: a missing/incomplete client never crashes the app, at
+// worst these become no-ops.
 
 function safeCall(fn: () => void): void {
   try {
