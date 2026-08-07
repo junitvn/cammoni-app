@@ -58,6 +58,12 @@ export default function DebugPanel() {
       <div style={{ marginBottom: 12 }}>
         <div style={{ color: '#fff', fontWeight: 'bold' }}>Environment</div>
         <div>BASE_URL: {BASE_URL || '(empty)'}</div>
+        <div style={{ wordBreak: 'break-all' }}>location.href: {window.location.href}</div>
+        <div style={{ wordBreak: 'break-all' }}>location.hash: {window.location.hash || '(empty)'}</div>
+        <div>document.referrer: {document.referrer || '(empty)'}</div>
+        <div style={{ wordBreak: 'break-all' }}>
+          sessionStorage.initParams: {sessionStorage.getItem('initParams') || '(empty)'}
+        </div>
         <div>
           window.Telegram.WebApp present:{' '}
           {String(typeof window !== 'undefined' && !!(window as unknown as { Telegram?: { WebApp?: unknown } }).Telegram?.WebApp)}
