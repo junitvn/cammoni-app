@@ -14,7 +14,10 @@ import type { TxType } from '../types'
 
 export default function TransactionFormScreen() {
   const navigate = useNavigate()
-  const goBack = useCallback(() => navigate(-1), [navigate])
+  // Deep-linked opens (bot's Edit button) land here with no Home entry before them
+  // in history, so navigate(-1) would exit the Mini App instead of going back — always
+  // go to an explicit destination instead of relying on history depth.
+  const goBack = useCallback(() => navigate('/'), [navigate])
   useTelegramBackButton(goBack)
 
   const { id } = useParams()
@@ -70,13 +73,13 @@ export default function TransactionFormScreen() {
         category: selectedCategory ?? undefined,
       })
     }
-    navigate(-1)
+    navigate('/')
   }
 
   async function handleDelete() {
     if (!id) return
     await deleteMut.mutateAsync(id)
-    navigate(-1)
+    navigate('/')
   }
 
   return (

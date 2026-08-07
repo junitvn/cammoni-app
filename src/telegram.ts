@@ -16,23 +16,60 @@ function safeCall(fn: () => void): void {
   }
 }
 
+function readFromHash(): string {
+  try {
+    const hash = window.location.hash.replace(/^#/, '')
+    return new URLSearchParams(hash).get('tgWebAppData') ?? ''
+  } catch {
+    return ''
+  }
+}
+
+// Client-side navigation (react-router's navigate()) rewrites location.hash to
+// empty, since the target URL never mentions it — so tgWebAppData must be captured
+// once, up front, into a value that survives navigating away from it. Telegram also
+// sets the hash *asynchronously* on some clients (slightly after this module first
+// runs), with no reliable event for it, so we poll briefly in addition to listening
+// for hashchange.
+let capturedInitData = ''
+
+function captureOnce(): void {
+  if (capturedInitData) return
+  const fromHash = readFromHash()
+  if (!fromHash) return
+  capturedInitData = fromHash
+  try {
+    sessionStorage.setItem('tgWebAppData', fromHash)
+  } catch {
+    // best-effort persistence only
+  }
+}
+
+captureOnce()
+if (typeof window !== 'undefined') {
+  window.addEventListener('hashchange', captureOnce)
+  let attempts = 0
+  const pollId = window.setInterval(() => {
+    captureOnce()
+    attempts += 1
+    if (capturedInitData || attempts > 20) window.clearInterval(pollId)
+  }, 100)
+}
+
 export function initTelegram(): void {
   safeCall(() => WebApp.ready())
   safeCall(() => WebApp.expand())
 }
 
-// @twa-dev/sdk reads location.hash exactly once, at import time. On native
-// Telegram clients the tgWebAppData hash is set slightly *after* that (the
-// SDK has no hashchange listener to catch it), so WebApp.initData ends up
-// permanently empty even though the real data is sitting in the URL. Parse
-// it directly instead, live, whenever this is called.
 export function getInitData(): string {
+  const fromHash = readFromHash()
+  if (fromHash) return fromHash
+  if (capturedInitData) return capturedInitData
   try {
-    const hash = window.location.hash.replace(/^#/, '')
-    const fromHash = new URLSearchParams(hash).get('tgWebAppData')
-    if (fromHash) return fromHash
+    const stored = sessionStorage.getItem('tgWebAppData')
+    if (stored) return stored
   } catch {
-    // fall through to the SDK
+    // ignore
   }
   try {
     return WebApp.initData ?? ''
