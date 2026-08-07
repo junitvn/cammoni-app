@@ -1,3 +1,4 @@
+import { logApiCall } from '../lib/debugLog'
 import { getInitData } from '../telegram'
 import type {
   Category,
@@ -23,14 +24,26 @@ export class ApiError extends Error {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const initData = getInitData()
-  const res = await fetch(`${BASE_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(initData ? { Authorization: `tma ${initData}` } : {}),
-      ...options.headers,
-    },
-  })
+  let res: Response
+  try {
+    res = await fetch(`${BASE_URL}${path}`, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(initData ? { Authorization: `tma ${initData}` } : {}),
+        ...options.headers,
+      },
+    })
+  } catch (err) {
+    logApiCall({
+      method: options.method ?? 'GET',
+      path,
+      status: 'error',
+      detail: err instanceof Error ? err.message : String(err),
+      hasAuthHeader: !!initData,
+    })
+    throw err
+  }
   if (!res.ok) {
     let detail: unknown = null
     try {
@@ -38,8 +51,17 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     } catch {
       // no JSON body
     }
-    throw new ApiError(res.status, (detail as { detail?: unknown })?.detail ?? detail)
+    const message = (detail as { detail?: unknown })?.detail ?? detail
+    logApiCall({
+      method: options.method ?? 'GET',
+      path,
+      status: res.status,
+      detail: typeof message === 'string' ? message : JSON.stringify(message),
+      hasAuthHeader: !!initData,
+    })
+    throw new ApiError(res.status, message)
   }
+  logApiCall({ method: options.method ?? 'GET', path, status: res.status, hasAuthHeader: !!initData })
   if (res.status === 204) return undefined as T
   return (await res.json()) as T
 }
