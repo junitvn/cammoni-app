@@ -9,7 +9,6 @@ import {
   useUpdateTransaction,
 } from '../api/hooks'
 import CategoryChip from '../components/CategoryChip'
-import { parseEntry } from '../lib/parseEntry'
 import { useTelegramBackButton } from '../telegram'
 import type { TxType } from '../types'
 
@@ -26,14 +25,14 @@ export default function TransactionFormScreen() {
   const { data: categories } = useCategories()
 
   const [type, setType] = useState<TxType>((search.get('type') as TxType) ?? 'chi')
-  const [text, setText] = useState('')
+  const [title, setTitle] = useState('')
+  const [amount, setAmount] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [excluded, setExcluded] = useState(false)
 
   useEffect(() => {
     if (!existing) return
     setType(existing.type)
-    setText(`${existing.amount / 1000} ${existing.description}`)
     setSelectedCategory(existing.category)
     setExcluded(existing.excluded)
   }, [existing])
@@ -42,20 +41,23 @@ export default function TransactionFormScreen() {
   const updateMut = useUpdateTransaction()
   const deleteMut = useDeleteTransaction()
 
-  const parsed = useMemo(() => parseEntry(text), [text])
   const visibleCategories = useMemo(
     () => (categories ?? []).filter((c) => c.income === (type === 'thu')),
     [categories, type],
   )
 
+  const resolvedTitle = title.trim() || (isEdit ? existing?.description : undefined)
+  const resolvedAmount = amount.trim() ? Number(amount) * 1000 : isEdit ? existing?.amount : undefined
+  const canSave = !!resolvedTitle && !!resolvedAmount && Number.isFinite(resolvedAmount) && resolvedAmount > 0
+
   async function handleSave() {
-    if (!parsed) return
+    if (!canSave || !resolvedTitle || !resolvedAmount) return
     if (isEdit && id) {
       await updateMut.mutateAsync({
         id,
         body: {
-          amount: parsed.amount,
-          description: parsed.description,
+          amount: resolvedAmount,
+          description: resolvedTitle,
           category: selectedCategory ?? undefined,
           excluded,
         },
@@ -63,8 +65,8 @@ export default function TransactionFormScreen() {
     } else {
       await createMut.mutateAsync({
         type,
-        amount: parsed.amount,
-        description: parsed.description,
+        amount: resolvedAmount,
+        description: resolvedTitle,
         category: selectedCategory ?? undefined,
       })
     }
@@ -104,10 +106,18 @@ export default function TransactionFormScreen() {
 
       <input
         autoFocus
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Products 300 or 300 products"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder={isEdit ? existing?.description : 'Title'}
         className="mx-4 border-b border-neutral-200 pb-2 text-lg focus:outline-none focus:border-black"
+      />
+
+      <input
+        value={amount}
+        onChange={(e) => setAmount(e.target.value)}
+        inputMode="decimal"
+        placeholder={isEdit && existing ? String(existing.amount / 1000) : 'Amount (in thousands)'}
+        className="mx-4 mt-4 border-b border-neutral-200 pb-2 text-lg focus:outline-none focus:border-black"
       />
 
       <div className="mt-6 px-4">
@@ -139,7 +149,7 @@ export default function TransactionFormScreen() {
         )}
         <button
           onClick={handleSave}
-          disabled={!parsed}
+          disabled={!canSave}
           className="flex-1 py-3 rounded-xl bg-black text-white font-medium disabled:opacity-40"
         >
           Save
