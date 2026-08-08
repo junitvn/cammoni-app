@@ -2,6 +2,10 @@ export function formatVnd(amount: number): string {
   return `${Math.abs(amount).toLocaleString('vi-VN')}₫`
 }
 
+export function formatDate(date: Date): string {
+  return date.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
 export function monthKey(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`
 }

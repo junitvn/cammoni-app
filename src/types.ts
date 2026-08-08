@@ -38,6 +38,7 @@ export interface TransactionCreate {
   description: string
   category?: string
   timestamp?: string
+  user_name?: string
 }
 
 export interface TransactionUpdate {
@@ -46,6 +47,7 @@ export interface TransactionUpdate {
   description?: string
   timestamp?: string
   excluded?: boolean
+  user_name?: string
 }
 
 export interface DailyTotals {

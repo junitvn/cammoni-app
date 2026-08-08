@@ -2,6 +2,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from './client'
 import type { CategoryUpdate, TransactionCreate, TransactionUpdate } from '../types'
 
+export function useMe() {
+  return useQuery({ queryKey: ['me'], queryFn: api.me })
+}
+
 export function useCategories() {
   return useQuery({ queryKey: ['categories'], queryFn: api.categories.list })
 }

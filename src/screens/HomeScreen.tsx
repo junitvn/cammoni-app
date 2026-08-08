@@ -41,7 +41,6 @@ export default function HomeScreen() {
     <div className="min-h-screen bg-neutral-50 pb-28">
       <TopTabs value={filter} onChange={setFilter} onMenu={() => navigate('/categories')} />
 
-      {data && <SummaryCards expense={data.today.expense} income={data.today.income} />}
 
       {data && (
         <MonthBar
@@ -52,6 +51,7 @@ export default function HomeScreen() {
           onNext={() => setMonth((m) => shiftMonth(m, 1))}
         />
       )}
+      {data && <SummaryCards expense={data.today.expense} income={data.today.income} />}
 
       {isLoading && <div className="text-center text-neutral-400 mt-10">Loading…</div>}
       {!isLoading && filteredGroups.length === 0 && (

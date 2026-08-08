@@ -1,15 +1,19 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2, X } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   useCategories,
   useCreateTransaction,
   useDeleteTransaction,
+  useMe,
   useTransaction,
   useUpdateTransaction,
 } from '../api/hooks'
 import CategoryChip from '../components/CategoryChip'
+import DatePicker from '../components/DatePicker'
+import UserPicker from '../components/UserPicker'
 import { useTelegramBackButton } from '../telegram'
+import { USER_NAMES } from '../lib/users'
 import type { TxType } from '../types'
 
 export default function TransactionFormScreen() {
@@ -26,19 +30,33 @@ export default function TransactionFormScreen() {
 
   const { data: existing } = useTransaction(id)
   const { data: categories } = useCategories()
+  const { data: me } = useMe()
 
   const [type, setType] = useState<TxType>((search.get('type') as TxType) ?? 'chi')
   const [title, setTitle] = useState('')
   const [amount, setAmount] = useState('')
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [excluded, setExcluded] = useState(false)
+  const [titleFocused, setTitleFocused] = useState(false)
+  const [amountFocused, setAmountFocused] = useState(false)
+  const [date, setDate] = useState(() => new Date())
+  const [userName, setUserName] = useState(USER_NAMES[0])
 
   useEffect(() => {
     if (!existing) return
     setType(existing.type)
     setSelectedCategory(existing.category)
     setExcluded(existing.excluded)
+    setTitle(existing.description)
+    setAmount(String(existing.amount / 1000))
+    setDate(new Date(existing.timestamp))
+    setUserName(existing.user_name)
   }, [existing])
+
+  useEffect(() => {
+    if (isEdit || !me) return
+    setUserName(USER_NAMES.includes(me.name) ? me.name : USER_NAMES[0])
+  }, [isEdit, me])
 
   const createMut = useCreateTransaction()
   const updateMut = useUpdateTransaction()
@@ -49,9 +67,10 @@ export default function TransactionFormScreen() {
     [categories, type],
   )
 
-  const resolvedTitle = title.trim() || (isEdit ? existing?.description : undefined)
-  const resolvedAmount = amount.trim() ? Number(amount) * 1000 : isEdit ? existing?.amount : undefined
+  const resolvedTitle = title.trim() || undefined
+  const resolvedAmount = amount.trim() ? Number(amount) * 1000 : undefined
   const canSave = !!resolvedTitle && !!resolvedAmount && Number.isFinite(resolvedAmount) && resolvedAmount > 0
+  const isSaving = createMut.isPending || updateMut.isPending
 
   async function handleSave() {
     if (!canSave || !resolvedTitle || !resolvedAmount) return
@@ -63,6 +82,8 @@ export default function TransactionFormScreen() {
           description: resolvedTitle,
           category: selectedCategory ?? undefined,
           excluded,
+          timestamp: date.toISOString(),
+          user_name: userName,
         },
       })
     } else {
@@ -71,6 +92,8 @@ export default function TransactionFormScreen() {
         amount: resolvedAmount,
         description: resolvedTitle,
         category: selectedCategory ?? undefined,
+        timestamp: date.toISOString(),
+        user_name: userName,
       })
     }
     navigate('/')
@@ -107,21 +130,55 @@ export default function TransactionFormScreen() {
         </div>
       </header>
 
-      <input
-        autoFocus
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder={isEdit ? existing?.description : 'Title'}
-        className="mx-4 border-b border-neutral-200 pb-2 text-lg focus:outline-none focus:border-black"
-      />
+      <div className="relative mx-4 flex items-center border-b border-neutral-200 focus-within:border-black">
+        <input
+          autoFocus
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          onFocus={() => setTitleFocused(true)}
+          onBlur={() => setTitleFocused(false)}
+          placeholder="Title"
+          className="flex-1 pb-2 pr-6 text-lg focus:outline-none"
+        />
+        {titleFocused && title && (
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setTitle('')}
+            aria-label="Clear title"
+            className="absolute right-0 pb-2 text-neutral-400"
+          >
+            <X size={18} />
+          </button>
+        )}
+      </div>
 
-      <input
-        value={amount}
-        onChange={(e) => setAmount(e.target.value)}
-        inputMode="decimal"
-        placeholder={isEdit && existing ? String(existing.amount / 1000) : 'Amount (in thousands)'}
-        className="mx-4 mt-4 border-b border-neutral-200 pb-2 text-lg focus:outline-none focus:border-black"
-      />
+      <div className="relative mx-4 mt-4 flex items-center border-b border-neutral-200 focus-within:border-black">
+        <input
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          onFocus={() => setAmountFocused(true)}
+          onBlur={() => setAmountFocused(false)}
+          inputMode="decimal"
+          className="flex-1 pb-2 pr-6 text-lg focus:outline-none"
+        />
+        {amountFocused && amount && (
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setAmount('')}
+            aria-label="Clear amount"
+            className="absolute right-0 pb-2 text-neutral-400"
+          >
+            <X size={18} />
+          </button>
+        )}
+      </div>
+
+      <div className="mt-4 px-4 flex items-center gap-3">
+        <DatePicker value={date} onChange={setDate} />
+        <UserPicker value={userName} onChange={setUserName} />
+      </div>
 
       <div className="mt-6 px-4">
         <div className="text-sm text-neutral-400 mb-2">Select quick category:</div>
@@ -152,9 +209,10 @@ export default function TransactionFormScreen() {
         )}
         <button
           onClick={handleSave}
-          disabled={!canSave}
-          className="flex-1 py-3 rounded-xl bg-black text-white font-medium disabled:opacity-40"
+          disabled={!canSave || isSaving}
+          className="flex-1 py-3 rounded-xl bg-black text-white font-medium disabled:opacity-40 flex items-center justify-center gap-2"
         >
+          {isSaving && <Loader2 size={18} className="animate-spin" />}
           Save
         </button>
       </div>
