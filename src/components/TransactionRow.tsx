@@ -16,12 +16,12 @@ export default function TransactionRow({ tx, category, onClick }: Props) {
     >
       <span className="text-xl">{category?.emoji ?? '📦'}</span>
       <span className="flex-1 truncate">
-        <span className="block font-medium text-neutral-800 truncate">{category?.name ?? tx.category}</span>
-        {
-          tx.description && <span className="block text-xs text-neutral-400 truncate">
-            {`${userEmoji(tx.user_name)} • ${tx.description}`}
+        <span className="block font-medium text-neutral-800 truncate">{tx.description || category?.name}</span>
+        {tx.description && (
+          <span className="block text-xs text-neutral-400 truncate">
+            {`${userEmoji(tx.user_name)} • ${category?.name}`}
           </span>
-        }
+        )}
       </span>
       <span className={`font-medium shrink-0 ${tx.type === 'thu' ? 'text-emerald-500' : 'text-red-500'}`}>
         {tx.type === 'thu' ? '+' : '-'}

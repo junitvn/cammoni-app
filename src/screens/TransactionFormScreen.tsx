@@ -30,9 +30,15 @@ import type { TxType } from '../types'
 export default function TransactionFormScreen() {
   const navigate = useNavigate()
   // Deep-linked opens (bot's Edit button) land here with no Home entry before them
-  // in history, so navigate(-1) would exit the Mini App instead of going back — always
-  // go to an explicit destination instead of relying on history depth.
-  const goBack = useCallback(() => navigate('/'), [navigate])
+  // in history, so navigate(-1) would exit the Mini App instead of going back.
+  // history.state.idx (set by react-router) is 0 when there's no prior in-app entry.
+  const goBack = useCallback(() => {
+    if ((window.history.state as { idx?: number } | null)?.idx) {
+      navigate(-1)
+    } else {
+      navigate('/')
+    }
+  }, [navigate])
   useTelegramBackButton(goBack)
 
   const { id } = useParams()
@@ -107,7 +113,7 @@ export default function TransactionFormScreen() {
         user_name: userName,
       })
     }
-    navigate('/')
+    goBack()
   }
 
   async function handleDelete(e: React.MouseEvent) {
@@ -116,7 +122,7 @@ export default function TransactionFormScreen() {
     e.preventDefault()
     if (!id) return
     await deleteMut.mutateAsync(id)
-    navigate('/')
+    goBack()
   }
 
   return (
@@ -146,6 +152,28 @@ export default function TransactionFormScreen() {
 
       <div className="relative mx-4 flex items-center border-b border-neutral-200 focus-within:border-black">
         <input
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          onFocus={() => setAmountFocused(true)}
+          onBlur={() => setAmountFocused(false)}
+          inputMode="decimal"
+          className="flex-1 pb-2 pr-6 text-lg focus:outline-none"
+        />
+        {amountFocused && amount && (
+          <button
+            type="button"
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => setAmount('')}
+            aria-label="Clear amount"
+            className="absolute right-0 pb-2 text-neutral-400"
+          >
+            <X size={18} />
+          </button>
+        )}
+      </div>
+
+      <div className="relative mx-4 mt-4  flex items-center border-b border-neutral-200 focus-within:border-black">
+        <input
           autoFocus
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -160,28 +188,6 @@ export default function TransactionFormScreen() {
             onMouseDown={(e) => e.preventDefault()}
             onClick={() => setTitle('')}
             aria-label="Clear title"
-            className="absolute right-0 pb-2 text-neutral-400"
-          >
-            <X size={18} />
-          </button>
-        )}
-      </div>
-
-      <div className="relative mx-4 mt-4 flex items-center border-b border-neutral-200 focus-within:border-black">
-        <input
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          onFocus={() => setAmountFocused(true)}
-          onBlur={() => setAmountFocused(false)}
-          inputMode="decimal"
-          className="flex-1 pb-2 pr-6 text-lg focus:outline-none"
-        />
-        {amountFocused && amount && (
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setAmount('')}
-            aria-label="Clear amount"
             className="absolute right-0 pb-2 text-neutral-400"
           >
             <X size={18} />
