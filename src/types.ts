@@ -79,7 +79,6 @@ export interface MonthTotals {
 }
 
 export interface AnalysisSummary {
-  year: string
   by_category: CategoryTotal[]
   monthly: MonthTotals[]
 }

@@ -4,6 +4,7 @@ import { BrowserRouter, Route, Routes, useNavigate, useSearchParams } from 'reac
 import AnalysisScreen from './screens/AnalysisScreen'
 import DebugPanel from './components/DebugPanel'
 import CategoriesScreen from './screens/CategoriesScreen'
+import CategoryDetailScreen from './screens/CategoryDetailScreen'
 import CategoryFormScreen from './screens/CategoryFormScreen'
 import HomeScreen from './screens/HomeScreen'
 import TransactionFormScreen from './screens/TransactionFormScreen'
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/categories/new" element={<CategoryFormScreen />} />
           <Route path="/categories/:key" element={<CategoryFormScreen />} />
           <Route path="/analysis" element={<AnalysisScreen />} />
+          <Route path="/analysis/:category" element={<CategoryDetailScreen />} />
         </Routes>
       </BrowserRouter>
       <DebugPanel />

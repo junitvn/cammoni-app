@@ -24,3 +24,25 @@ export function subscribe(listener: () => void): () => void {
 export function getSnapshot(): ApiLogEntry[] {
   return entries
 }
+
+let panelOpen = false
+const panelListeners = new Set<() => void>()
+
+export function openDebugPanel(): void {
+  panelOpen = true
+  panelListeners.forEach((l) => l())
+}
+
+export function closeDebugPanel(): void {
+  panelOpen = false
+  panelListeners.forEach((l) => l())
+}
+
+export function subscribePanelOpen(listener: () => void): () => void {
+  panelListeners.add(listener)
+  return () => panelListeners.delete(listener)
+}
+
+export function getPanelOpenSnapshot(): boolean {
+  return panelOpen
+}

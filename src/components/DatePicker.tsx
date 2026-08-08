@@ -7,6 +7,7 @@ const WEEKDAYS = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 interface DatePickerProps {
   value: Date
   onChange: (date: Date) => void
+  fullWidth?: boolean
 }
 
 function isSameDay(a: Date, b: Date): boolean {
@@ -22,8 +23,11 @@ function getMonthMatrix(year: number, month: number): (Date | null)[] {
   return cells
 }
 
-export default function DatePicker({ value, onChange }: DatePickerProps) {
+const DROPDOWN_WIDTH = 256 // px, matches w-64
+
+export default function DatePicker({ value, onChange, fullWidth = false }: DatePickerProps) {
   const [open, setOpen] = useState(false)
+  const [align, setAlign] = useState<'left' | 'right'>('left')
   const [viewMonth, setViewMonth] = useState(() => new Date(value.getFullYear(), value.getMonth(), 1))
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -38,6 +42,8 @@ export default function DatePicker({ value, onChange }: DatePickerProps) {
 
   function openPicker() {
     setViewMonth(new Date(value.getFullYear(), value.getMonth(), 1))
+    const rect = containerRef.current?.getBoundingClientRect()
+    setAlign(rect && rect.left + DROPDOWN_WIDTH > window.innerWidth ? 'right' : 'left')
     setOpen(true)
   }
 
@@ -45,18 +51,20 @@ export default function DatePicker({ value, onChange }: DatePickerProps) {
   const today = new Date()
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className={`relative ${fullWidth ? 'w-full' : ''}`}>
       <button
         type="button"
         onClick={() => (open ? setOpen(false) : openPicker())}
-        className="flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-600"
+        className={`flex items-center gap-2 rounded-lg border border-neutral-200 px-3 py-2 text-sm text-neutral-600 ${fullWidth ? 'w-full' : ''}`}
       >
         <Calendar size={16} />
         {formatDate(value)}
       </button>
 
       {open && (
-        <div className="absolute z-10 mt-2 w-64 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg">
+        <div
+          className={`absolute z-10 mt-2 w-64 rounded-xl border border-neutral-200 bg-white p-3 shadow-lg ${align === 'right' ? 'right-0' : 'left-0'}`}
+        >
           <div className="mb-2 flex items-center justify-between">
             <button
               type="button"

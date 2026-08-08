@@ -12,6 +12,17 @@ import {
 import CategoryChip from '../components/CategoryChip'
 import DatePicker from '../components/DatePicker'
 import UserPicker from '../components/UserPicker'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../components/ui/alert-dialog'
 import { useTelegramBackButton } from '../telegram'
 import { USER_NAMES } from '../lib/users'
 import type { TxType } from '../types'
@@ -99,7 +110,10 @@ export default function TransactionFormScreen() {
     navigate('/')
   }
 
-  async function handleDelete() {
+  async function handleDelete(e: React.MouseEvent) {
+    // Keep the alert dialog open (AlertDialogAction closes on click by default)
+    // so the loading state is visible until the request finishes.
+    e.preventDefault()
     if (!id) return
     await deleteMut.mutateAsync(id)
     navigate('/')
@@ -203,9 +217,28 @@ export default function TransactionFormScreen() {
 
       <div className="mt-auto p-4 flex gap-3">
         {isEdit && (
-          <button onClick={handleDelete} className="flex-1 py-3 rounded-xl border border-red-200 text-red-500 font-medium">
-            Delete
-          </button>
+          <AlertDialog>
+            <AlertDialogTrigger className="flex-1 py-3 rounded-xl border border-red-200 text-red-500 font-medium">
+              Delete
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this transaction?</AlertDialogTitle>
+                <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleteMut.isPending}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  disabled={deleteMut.isPending}
+                  className="flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {deleteMut.isPending && <Loader2 size={18} className="animate-spin" />}
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
         <button
           onClick={handleSave}

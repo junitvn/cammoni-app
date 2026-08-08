@@ -7,16 +7,19 @@ interface Props {
   income: number
   onPrev: () => void
   onNext: () => void
+  onClickMonth: () => void
 }
 
-export default function MonthBar({ month, expense, income, onPrev, onNext }: Props) {
+export default function MonthBar({ month, expense, income, onPrev, onNext, onClickMonth }: Props) {
   return (
     <div className="mx-4 mt-4 bg-black text-white rounded-2xl px-3 py-3 flex items-center justify-between">
       <button onClick={onPrev} className="p-1" aria-label="Previous month">
         <ChevronLeft size={18} />
       </button>
       <div className="flex items-center gap-3 text-sm">
-        <span className="font-medium">{monthLabel(month)}</span>
+        <button onClick={onClickMonth} className="font-medium underline-offset-2 hover:underline">
+          {monthLabel(month)}
+        </button>
         <span className="text-red-400">-{formatVnd(expense)}</span>
         <span className="text-emerald-400">+{formatVnd(income)}</span>
       </div>

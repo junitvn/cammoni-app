@@ -41,8 +41,8 @@ export function useHomeSummary(month: string) {
   return useQuery({ queryKey: ['home', month], queryFn: () => api.home(month) })
 }
 
-export function useAnalysis(year: string) {
-  return useQuery({ queryKey: ['analysis', year], queryFn: () => api.analysis(year) })
+export function useAnalysis(start: string, end: string) {
+  return useQuery({ queryKey: ['analysis', start, end], queryFn: () => api.analysis(start, end) })
 }
 
 export function useTransaction(id: string | undefined) {
@@ -50,6 +50,13 @@ export function useTransaction(id: string | undefined) {
     queryKey: ['transaction', id],
     queryFn: () => api.transactions.get(id!),
     enabled: !!id,
+  })
+}
+
+export function useCategoryTransactions(category: string, start: string, end: string) {
+  return useQuery({
+    queryKey: ['transactions', category, start, end],
+    queryFn: () => api.transactions.byCategory(category, start, end),
   })
 }
 

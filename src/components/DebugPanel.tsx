@@ -1,12 +1,12 @@
 import WebApp from '@twa-dev/sdk'
-import { useState, useSyncExternalStore } from 'react'
-import { getSnapshot, subscribe } from '../lib/debugLog'
+import { useSyncExternalStore } from 'react'
+import { closeDebugPanel, getPanelOpenSnapshot, getSnapshot, subscribe, subscribePanelOpen } from '../lib/debugLog'
 import { getInitData } from '../telegram'
 
 const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000').replace(/\/+$/, '')
 
 export default function DebugPanel() {
-  const [open, setOpen] = useState(false)
+  const open = useSyncExternalStore(subscribePanelOpen, getPanelOpenSnapshot)
   const log = useSyncExternalStore(subscribe, getSnapshot)
   const initData = getInitData()
   const parsedUser = (() => {
@@ -17,29 +17,7 @@ export default function DebugPanel() {
     }
   })()
 
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        style={{
-          position: 'fixed',
-          bottom: 12,
-          right: 12,
-          zIndex: 9999,
-          width: 36,
-          height: 36,
-          borderRadius: 18,
-          background: '#111',
-          color: '#fff',
-          border: 'none',
-          fontSize: 16,
-          opacity: 0.6,
-        }}
-      >
-        🐞
-      </button>
-    )
-  }
+  if (!open) return null
 
   return (
     <div
@@ -56,7 +34,7 @@ export default function DebugPanel() {
       }}
     >
       <button
-        onClick={() => setOpen(false)}
+        onClick={closeDebugPanel}
         style={{ position: 'fixed', top: 8, right: 8, background: '#333', color: '#fff', border: 'none', padding: '4px 10px' }}
       >
         close

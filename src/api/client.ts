@@ -82,6 +82,8 @@ export const api = {
 
   transactions: {
     get: (id: string) => request<Transaction>(`/api/transactions/${id}`),
+    byCategory: (category: string, start: string, end: string) =>
+      request<Transaction[]>(`/api/transactions?category=${encodeURIComponent(category)}&start=${start}&end=${end}`),
     create: (body: TransactionCreate) =>
       request<Transaction>('/api/transactions', { method: 'POST', body: JSON.stringify(body) }),
     update: (id: string, body: TransactionUpdate) =>
@@ -91,5 +93,5 @@ export const api = {
 
   home: (month: string) => request<HomeSummary>(`/api/home?month=${month}`),
 
-  analysis: (year: string) => request<AnalysisSummary>(`/api/analysis?year=${year}`),
+  analysis: (start: string, end: string) => request<AnalysisSummary>(`/api/analysis?start=${start}&end=${end}`),
 }

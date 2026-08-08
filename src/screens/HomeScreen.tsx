@@ -7,7 +7,8 @@ import MenuSheet from '../components/MenuSheet'
 import MonthBar from '../components/MonthBar'
 import SummaryCards from '../components/SummaryCards'
 import TopTabs, { type Filter } from '../components/TopTabs'
-import { monthKey, shiftMonth } from '../lib/format'
+import { monthKey, monthRange, shiftMonth, toISODate } from '../lib/format'
+import { openDebugPanel } from '../lib/debugLog'
 import type { Category, Transaction } from '../types'
 
 export default function HomeScreen() {
@@ -39,6 +40,11 @@ export default function HomeScreen() {
     navigate(`/transactions/${tx.id}`)
   }
 
+  function openMonthAnalysis() {
+    const { start, end } = monthRange(month)
+    navigate(`/analysis?start=${toISODate(start)}&end=${toISODate(end)}`)
+  }
+
   return (
     <div className="min-h-screen bg-neutral-50 pb-28">
       <TopTabs value={filter} onChange={setFilter} onMenu={() => setMenuOpen(true)} />
@@ -52,6 +58,7 @@ export default function HomeScreen() {
           income={data.month_totals.income}
           onPrev={() => setMonth((m) => shiftMonth(m, -1))}
           onNext={() => setMonth((m) => shiftMonth(m, 1))}
+          onClickMonth={openMonthAnalysis}
         />
       )}
       {data && <SummaryCards expense={data.today.expense} income={data.today.income} />}
@@ -65,7 +72,10 @@ export default function HomeScreen() {
         <DayGroup key={g.label} label={g.label} transactions={g.transactions} categories={categoryMap} onSelect={openTransaction} />
       ))}
 
-      <FloatingAddButton onClick={() => navigate(`/add?type=${filter === 'thu' ? 'thu' : 'chi'}`)} />
+      <FloatingAddButton
+        onClick={() => navigate(`/add?type=${filter === 'thu' ? 'thu' : 'chi'}`)}
+        onLongPress={openDebugPanel}
+      />
     </div>
   )
 }
