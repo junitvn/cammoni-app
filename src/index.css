@@ -1,6 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: oklch(1 0 0);
+  --color-foreground: oklch(0.145 0 0);
+  --color-muted-foreground: oklch(0.556 0 0);
+  --color-border: oklch(0.922 0 0);
+}
+
+/*
+ * Plain CSS custom properties, not @theme — these are only ever read via
+ * var(--color-chart-N) from JS (recharts fill colors), never as Tailwind
+ * utility classes, so @theme's usage-based tree-shaking would drop the
+ * ones it doesn't see referenced literally in a class name.
+ */
 :root {
+  --color-chart-1: oklch(0.646 0.222 41.116);
+  --color-chart-2: oklch(0.6 0.118 184.704);
+  --color-chart-3: oklch(0.398 0.07 227.392);
+  --color-chart-4: oklch(0.828 0.189 84.429);
+  --color-chart-5: oklch(0.769 0.188 70.08);
   color-scheme: light;
 }
 

@@ -1,6 +1,7 @@
 import { logApiCall } from '../lib/debugLog'
 import { getInitData } from '../telegram'
 import type {
+  AnalysisSummary,
   Category,
   CategoryCreate,
   CategoryUpdate,
@@ -89,4 +90,6 @@ export const api = {
   },
 
   home: (month: string) => request<HomeSummary>(`/api/home?month=${month}`),
+
+  analysis: (year: string) => request<AnalysisSummary>(`/api/analysis?year=${year}`),
 }

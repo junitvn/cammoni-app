@@ -66,3 +66,20 @@ export interface HomeSummary {
   month_totals: DailyTotals
   groups: TransactionGroup[]
 }
+
+export interface CategoryTotal {
+  category: string
+  amount: number
+}
+
+export interface MonthTotals {
+  month: string
+  expense: number
+  income: number
+}
+
+export interface AnalysisSummary {
+  year: string
+  by_category: CategoryTotal[]
+  monthly: MonthTotals[]
+}

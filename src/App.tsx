@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { BrowserRouter, Route, Routes, useNavigate, useSearchParams } from 'react-router-dom'
+import AnalysisScreen from './screens/AnalysisScreen'
 import DebugPanel from './components/DebugPanel'
 import CategoriesScreen from './screens/CategoriesScreen'
 import CategoryFormScreen from './screens/CategoryFormScreen'
@@ -41,6 +42,7 @@ export default function App() {
           <Route path="/categories" element={<CategoriesScreen />} />
           <Route path="/categories/new" element={<CategoryFormScreen />} />
           <Route path="/categories/:key" element={<CategoryFormScreen />} />
+          <Route path="/analysis" element={<AnalysisScreen />} />
         </Routes>
       </BrowserRouter>
       <DebugPanel />

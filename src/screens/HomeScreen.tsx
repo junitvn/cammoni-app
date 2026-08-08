@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useCategories, useHomeSummary } from '../api/hooks'
 import DayGroup from '../components/DayGroup'
 import FloatingAddButton from '../components/FloatingAddButton'
+import MenuSheet from '../components/MenuSheet'
 import MonthBar from '../components/MonthBar'
 import SummaryCards from '../components/SummaryCards'
 import TopTabs, { type Filter } from '../components/TopTabs'
@@ -13,6 +14,7 @@ export default function HomeScreen() {
   const navigate = useNavigate()
   const [filter, setFilter] = useState<Filter>('all')
   const [month, setMonth] = useState(() => monthKey(new Date()))
+  const [menuOpen, setMenuOpen] = useState(false)
 
   const { data, isLoading } = useHomeSummary(month)
   const { data: categories } = useCategories()
@@ -39,7 +41,8 @@ export default function HomeScreen() {
 
   return (
     <div className="min-h-screen bg-neutral-50 pb-28">
-      <TopTabs value={filter} onChange={setFilter} onMenu={() => navigate('/categories')} />
+      <TopTabs value={filter} onChange={setFilter} onMenu={() => setMenuOpen(true)} />
+      <MenuSheet open={menuOpen} onClose={() => setMenuOpen(false)} />
 
 
       {data && (
