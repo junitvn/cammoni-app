@@ -1,21 +1,12 @@
 import { ArrowLeft } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, XAxis } from 'recharts'
+import { Cell, Pie, PieChart } from 'recharts'
 import { useAnalysis, useCategories } from '../api/hooks'
-import {
-  ChartContainer,
-  ChartLegend,
-  ChartLegendContent,
-  ChartTooltip,
-  ChartTooltipContent,
-  type ChartConfig,
-} from '../components/ui/chart'
+import { ChartContainer, ChartTooltip, ChartTooltipContent, type ChartConfig } from '../components/ui/chart'
 import TimeRangePicker, { defaultRange, type TimeRange } from '../components/TimeRangePicker'
-import { formatDate, formatVnd, toISODate } from '../lib/format'
+import { formatVnd, toISODate } from '../lib/format'
 import { useTelegramBackButton } from '../telegram'
-
-const MONTH_LABELS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
 // Fixed 8-hue categorical palette (index.css) — never cycle past it. Beyond
 // that many categories, fold the smallest into "Other" instead of reusing a slot.
@@ -155,21 +146,6 @@ export default function AnalysisScreen() {
   const pieChartHeight = Math.max(240, pieMaxSideCount * LABEL_ROW_HEIGHT)
   const totalExpense = useMemo(() => (data?.by_category ?? []).reduce((sum, c) => sum + c.amount, 0), [data])
 
-  const monthlyData = useMemo(
-    () =>
-      data?.monthly.map((m) => ({
-        month: MONTH_LABELS[Number(m.month.slice(5, 7)) - 1],
-        expense: m.expense,
-        income: m.income,
-      })) ?? [],
-    [data],
-  )
-
-  const monthlyConfig: ChartConfig = {
-    expense: { label: 'Expense', color: 'var(--color-chart-1)' },
-    income: { label: 'Income', color: 'var(--color-chart-2)' },
-  }
-
   return (
     <div className="min-h-screen bg-neutral-50 pb-10">
       <header className="flex items-center gap-3 px-4 py-4">
@@ -236,21 +212,6 @@ export default function AnalysisScreen() {
             </div>
           )}
 
-          {/* <div className="rounded-2xl bg-white p-4">
-            <h2 className="mb-2 font-medium text-neutral-800">
-              Expense / income · {formatDate(range.start)} – {formatDate(range.end)}
-            </h2>
-            <ChartContainer config={monthlyConfig} className="max-h-64 w-full">
-              <BarChart data={monthlyData}>
-                <CartesianGrid vertical={false} />
-                <XAxis dataKey="month" tickLine={false} axisLine={false} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <ChartLegend content={<ChartLegendContent />} />
-                <Bar dataKey="expense" fill="var(--color-expense)" radius={4} />
-                <Bar dataKey="income" fill="var(--color-income)" radius={4} />
-              </BarChart>
-            </ChartContainer>
-          </div> */}
         </div>
       )}
     </div>
