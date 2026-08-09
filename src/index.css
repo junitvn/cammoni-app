@@ -44,3 +44,11 @@ textarea,
 button {
   font-family: inherit;
 }
+
+/* iOS WKWebView (incl. Telegram Mini Apps) sometimes fails to render the
+   blinking text caret when it's left to default/auto - forcing it explicitly
+   makes it reliably visible. */
+input,
+textarea {
+  caret-color: #000;
+}

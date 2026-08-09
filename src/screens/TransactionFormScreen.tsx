@@ -150,52 +150,63 @@ export default function TransactionFormScreen() {
         </div>
       </header>
 
-      <div className="relative mx-4 flex items-center border-b border-neutral-200 focus-within:border-black">
-        <input
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          onFocus={() => setAmountFocused(true)}
-          onBlur={() => setAmountFocused(false)}
-          inputMode="decimal"
-          className="flex-1 pb-2 pr-6 text-lg focus:outline-none"
-        />
-        {amountFocused && amount && (
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setAmount('')}
-            aria-label="Clear amount"
-            className="absolute right-0 pb-2 text-neutral-400"
-          >
-            <X size={18} />
-          </button>
-        )}
+      <div className="mx-4">
+        <label htmlFor="amount-input" className="text-sm text-neutral-400">
+          Amount
+        </label>
+        <div className="relative flex items-center border-b border-neutral-200 focus-within:border-black">
+          <input
+            id="amount-input"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            onFocus={() => setAmountFocused(true)}
+            onBlur={() => setAmountFocused(false)}
+            inputMode="decimal"
+            className="flex-1 pb-2 pr-6 text-lg focus:outline-none"
+          />
+          {amountFocused && amount && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setAmount('')}
+              aria-label="Clear amount"
+              className="absolute right-0 pb-2 text-neutral-400"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="relative mx-4 mt-4  flex items-center border-b border-neutral-200 focus-within:border-black">
-        <input
-          autoFocus
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          onFocus={() => setTitleFocused(true)}
-          onBlur={() => setTitleFocused(false)}
-          placeholder="Title"
-          className="flex-1 pb-2 pr-6 text-lg focus:outline-none"
-        />
-        {titleFocused && title && (
-          <button
-            type="button"
-            onMouseDown={(e) => e.preventDefault()}
-            onClick={() => setTitle('')}
-            aria-label="Clear title"
-            className="absolute right-0 pb-2 text-neutral-400"
-          >
-            <X size={18} />
-          </button>
-        )}
+      <div className="mx-4 mt-4">
+        <label htmlFor="title-input" className="text-sm text-neutral-400">
+          Title
+        </label>
+        <div className="relative flex items-center border-b border-neutral-200 focus-within:border-black">
+          <input
+            id="title-input"
+            autoFocus
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            onFocus={() => setTitleFocused(true)}
+            onBlur={() => setTitleFocused(false)}
+            className="flex-1 pb-2 pr-6 text-lg focus:outline-none"
+          />
+          {titleFocused && title && (
+            <button
+              type="button"
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => setTitle('')}
+              aria-label="Clear title"
+              className="absolute right-0 pb-2 text-neutral-400"
+            >
+              <X size={18} />
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="mt-4 px-4 flex items-center gap-3">
+      <div className="mt-4 px-4 flex flex-col sm:flex-row items-start sm:item-center gap-3">
         <DatePicker value={date} onChange={setDate} />
         <UserPicker value={userName} onChange={setUserName} />
       </div>

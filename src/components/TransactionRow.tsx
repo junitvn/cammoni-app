@@ -14,12 +14,12 @@ export default function TransactionRow({ tx, category, onClick }: Props) {
       onClick={onClick}
       className={`w-full flex items-center gap-3 px-4 py-3 text-left ${tx.excluded ? 'opacity-50' : ''}`}
     >
-      <span className="text-xl">{category?.emoji ?? '📦'}</span>
+      <span className="text-xl">{userEmoji(tx.user_name)}</span>
       <span className="flex-1 truncate">
         <span className="block font-medium text-neutral-800 truncate">{tx.description || category?.name}</span>
         {tx.description && (
           <span className="block text-xs text-neutral-400 truncate">
-            {`${userEmoji(tx.user_name)} • ${category?.name}`}
+            {`${category?.emoji ?? '📦'} • ${category?.name}`}
           </span>
         )}
       </span>

@@ -7,7 +7,7 @@ interface UserPickerProps {
 
 export default function UserPicker({ value, onChange }: UserPickerProps) {
   return (
-    <div className="flex items-center gap-1 rounded-full bg-neutral-100 p-1">
+    <div className="flex items-center gap-1 rounded-full bg-neutral-100 p-1 min-w-[212px]">
       {USER_NAMES.map((name) => (
         <button
           key={name}

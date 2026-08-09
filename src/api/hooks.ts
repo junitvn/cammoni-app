@@ -64,7 +64,11 @@ export function useCreateTransaction() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (body: TransactionCreate) => api.transactions.create(body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['home'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['home'] })
+      qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['analysis'] })
+    },
   })
 }
 
@@ -72,7 +76,11 @@ export function useUpdateTransaction() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: ({ id, body }: { id: string; body: TransactionUpdate }) => api.transactions.update(id, body),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['home'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['home'] })
+      qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['analysis'] })
+    },
   })
 }
 
@@ -80,6 +88,10 @@ export function useDeleteTransaction() {
   const qc = useQueryClient()
   return useMutation({
     mutationFn: (id: string) => api.transactions.remove(id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['home'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['home'] })
+      qc.invalidateQueries({ queryKey: ['transactions'] })
+      qc.invalidateQueries({ queryKey: ['analysis'] })
+    },
   })
 }
