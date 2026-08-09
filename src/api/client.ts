@@ -82,6 +82,7 @@ export const api = {
 
   transactions: {
     get: (id: string) => request<Transaction>(`/api/transactions/${id}`),
+    search: (q: string) => request<Transaction[]>(`/api/transactions/search?q=${encodeURIComponent(q)}`),
     byCategory: (category: string, start: string, end: string) =>
       request<Transaction[]>(`/api/transactions?category=${encodeURIComponent(category)}&start=${start}&end=${end}`),
     create: (body: TransactionCreate) =>

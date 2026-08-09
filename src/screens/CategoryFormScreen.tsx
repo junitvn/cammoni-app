@@ -1,8 +1,19 @@
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ApiError } from '../api/client'
 import { useCategories, useCreateCategory, useDeleteCategory, useUpdateCategory } from '../api/hooks'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '../components/ui/alert-dialog'
 import { useTelegramBackButton } from '../telegram'
 
 export default function CategoryFormScreen() {
@@ -20,6 +31,7 @@ export default function CategoryFormScreen() {
   const [income, setIncome] = useState(false)
   const [keywords, setKeywords] = useState('')
   const [confirmCount, setConfirmCount] = useState<number | null>(null)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   useEffect(() => {
     if (!existing) return
@@ -37,9 +49,12 @@ export default function CategoryFormScreen() {
     () => keywords.split(',').map((k) => k.trim()).filter(Boolean),
     [keywords],
   )
+  const canSave = !!name.trim()
+  const isSaving = createMut.isPending || updateMut.isPending
+  const isBusy = isSaving || deleteMut.isPending
 
   async function handleSave() {
-    if (!name.trim()) return
+    if (!canSave || isBusy) return
     if (isEdit && key) {
       await updateMut.mutateAsync({ key, body: { name, emoji, keywords: parsedKeywords } })
     } else {
@@ -48,7 +63,8 @@ export default function CategoryFormScreen() {
     navigate(-1)
   }
 
-  async function handleDelete(reassign: boolean) {
+  async function handleDelete(e: React.MouseEvent, reassign: boolean) {
+    e.preventDefault()
     if (!key) return
     try {
       await deleteMut.mutateAsync({ key, reassign })
@@ -56,6 +72,7 @@ export default function CategoryFormScreen() {
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
         const count = (e.detail as { count?: number } | null)?.count ?? 0
+        setDeleteOpen(false)
         setConfirmCount(count)
       }
     }
@@ -75,14 +92,16 @@ export default function CategoryFormScreen() {
           <input
             value={emoji}
             onChange={(e) => setEmoji(e.target.value)}
+            disabled={isBusy}
             maxLength={4}
-            className="w-14 text-center text-2xl border border-neutral-200 rounded-xl py-2"
+            className="w-14 text-center text-2xl border border-neutral-200 rounded-xl py-2 disabled:opacity-60"
           />
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
+            disabled={isBusy}
             placeholder="Category name"
-            className="flex-1 border border-neutral-200 rounded-xl px-3 py-2"
+            className="flex-1 border border-neutral-200 rounded-xl px-3 py-2 disabled:opacity-60"
           />
         </div>
 
@@ -90,12 +109,14 @@ export default function CategoryFormScreen() {
           <div className="flex bg-neutral-100 rounded-full p-1 w-fit">
             <button
               onClick={() => setIncome(false)}
+              disabled={isBusy}
               className={`px-4 py-1.5 rounded-full text-sm font-medium ${!income ? 'bg-black text-white' : 'text-neutral-500'}`}
             >
               Expense
             </button>
             <button
               onClick={() => setIncome(true)}
+              disabled={isBusy}
               className={`px-4 py-1.5 rounded-full text-sm font-medium ${income ? 'bg-black text-white' : 'text-neutral-500'}`}
             >
               Income
@@ -108,7 +129,8 @@ export default function CategoryFormScreen() {
           <textarea
             value={keywords}
             onChange={(e) => setKeywords(e.target.value)}
-            className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm"
+            disabled={isBusy}
+            className="w-full border border-neutral-200 rounded-xl px-3 py-2 text-sm disabled:opacity-60"
             rows={3}
           />
         </div>
@@ -116,46 +138,68 @@ export default function CategoryFormScreen() {
 
       <div className="p-4 flex gap-3">
         {isEdit && (
-          <button
-            onClick={() => handleDelete(false)}
-            className="flex-1 py-3 rounded-xl border border-red-200 text-red-500 font-medium"
-          >
-            Delete
-          </button>
+          <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+            <AlertDialogTrigger asChild>
+              <button
+                disabled={isBusy}
+                className="flex-1 py-3 rounded-xl border border-red-200 text-red-500 font-medium disabled:opacity-40"
+              >
+                Delete
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this category?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. Categories with transactions may need reassignment before deleting.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel disabled={deleteMut.isPending}>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={(e) => handleDelete(e, false)}
+                  disabled={deleteMut.isPending}
+                  className="flex items-center justify-center gap-2 disabled:opacity-60"
+                >
+                  {deleteMut.isPending && <Loader2 size={18} className="animate-spin" />}
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         )}
         <button
           onClick={handleSave}
-          disabled={!name.trim()}
-          className="flex-1 py-3 rounded-xl bg-black text-white font-medium disabled:opacity-40"
+          disabled={!canSave || isBusy}
+          className="flex-1 py-3 rounded-xl bg-black text-white font-medium disabled:opacity-40 flex items-center justify-center gap-2"
         >
+          {isSaving && <Loader2 size={18} className="animate-spin" />}
           Save
         </button>
       </div>
 
-      {confirmCount !== null && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-6">
-          <div className="bg-white rounded-2xl p-5 max-w-sm">
-            <p className="text-neutral-700">
-              {confirmCount} transaction{confirmCount === 1 ? '' : 's'} use this category. Reassign them to the
-              default category and delete?
-            </p>
-            <div className="flex gap-3 mt-4">
-              <button onClick={() => setConfirmCount(null)} className="flex-1 py-2 rounded-xl border">
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setConfirmCount(null)
-                  handleDelete(true)
-                }}
-                className="flex-1 py-2 rounded-xl bg-red-500 text-white"
-              >
-                Reassign &amp; delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AlertDialog open={confirmCount !== null} onOpenChange={(open) => !open && setConfirmCount(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reassign transactions?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmCount} transaction{confirmCount === 1 ? '' : 's'} use this category. Reassign them to the default
+              category and delete?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleteMut.isPending}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => handleDelete(e, true)}
+              disabled={deleteMut.isPending}
+              className="flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              {deleteMut.isPending && <Loader2 size={18} className="animate-spin" />}
+              Reassign &amp; delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

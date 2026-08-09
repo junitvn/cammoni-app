@@ -9,6 +9,7 @@ const CategoriesScreen = lazy(() => import('./screens/CategoriesScreen'))
 const CategoryDetailScreen = lazy(() => import('./screens/CategoryDetailScreen'))
 const CategoryFormScreen = lazy(() => import('./screens/CategoryFormScreen'))
 const HomeScreen = lazy(() => import('./screens/HomeScreen'))
+const SearchScreen = lazy(() => import('./screens/SearchScreen'))
 const TransactionFormScreen = lazy(() => import('./screens/TransactionFormScreen'))
 
 const queryClient = new QueryClient()
@@ -40,6 +41,7 @@ export default function App() {
         <Suspense fallback={null}>
           <Routes>
             <Route path="/" element={<HomeScreen />} />
+            <Route path="/search" element={<SearchScreen />} />
             <Route path="/add" element={<TransactionFormScreen />} />
             <Route path="/transactions/:id" element={<TransactionFormScreen />} />
             <Route path="/categories" element={<CategoriesScreen />} />

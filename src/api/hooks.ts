@@ -60,6 +60,14 @@ export function useCategoryTransactions(category: string, start: string, end: st
   })
 }
 
+export function useSearchTransactions(query: string) {
+  return useQuery({
+    queryKey: ['transactions', 'search', query],
+    queryFn: () => api.transactions.search(query),
+    enabled: !!query.trim(),
+  })
+}
+
 export function useCreateTransaction() {
   const qc = useQueryClient()
   return useMutation({

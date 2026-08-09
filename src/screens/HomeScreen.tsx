@@ -47,7 +47,12 @@ export default function HomeScreen() {
 
   return (
     <div className="min-h-screen bg-neutral-50 pb-28">
-      <TopTabs value={filter} onChange={setFilter} onMenu={() => setMenuOpen(true)} />
+      <TopTabs
+        value={filter}
+        onChange={setFilter}
+        onSearch={() => navigate('/search')}
+        onMenu={() => setMenuOpen(true)}
+      />
       <MenuSheet open={menuOpen} onClose={() => setMenuOpen(false)} />
 
 
