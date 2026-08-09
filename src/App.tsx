@@ -1,14 +1,15 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { useEffect } from 'react'
+import { lazy, Suspense, useEffect } from 'react'
 import { BrowserRouter, Route, Routes, useNavigate, useSearchParams } from 'react-router-dom'
-import AnalysisScreen from './screens/AnalysisScreen'
-import DebugPanel from './components/DebugPanel'
-import CategoriesScreen from './screens/CategoriesScreen'
-import CategoryDetailScreen from './screens/CategoryDetailScreen'
-import CategoryFormScreen from './screens/CategoryFormScreen'
-import HomeScreen from './screens/HomeScreen'
-import TransactionFormScreen from './screens/TransactionFormScreen'
 import { initTelegram } from './telegram'
+
+const AnalysisScreen = lazy(() => import('./screens/AnalysisScreen'))
+const DebugPanel = lazy(() => import('./components/DebugPanel'))
+const CategoriesScreen = lazy(() => import('./screens/CategoriesScreen'))
+const CategoryDetailScreen = lazy(() => import('./screens/CategoryDetailScreen'))
+const CategoryFormScreen = lazy(() => import('./screens/CategoryFormScreen'))
+const HomeScreen = lazy(() => import('./screens/HomeScreen'))
+const TransactionFormScreen = lazy(() => import('./screens/TransactionFormScreen'))
 
 const queryClient = new QueryClient()
 
@@ -36,18 +37,22 @@ export default function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <DeepLinkRedirect />
-        <Routes>
-          <Route path="/" element={<HomeScreen />} />
-          <Route path="/add" element={<TransactionFormScreen />} />
-          <Route path="/transactions/:id" element={<TransactionFormScreen />} />
-          <Route path="/categories" element={<CategoriesScreen />} />
-          <Route path="/categories/new" element={<CategoryFormScreen />} />
-          <Route path="/categories/:key" element={<CategoryFormScreen />} />
-          <Route path="/analysis" element={<AnalysisScreen />} />
-          <Route path="/analysis/:category" element={<CategoryDetailScreen />} />
-        </Routes>
+        <Suspense fallback={null}>
+          <Routes>
+            <Route path="/" element={<HomeScreen />} />
+            <Route path="/add" element={<TransactionFormScreen />} />
+            <Route path="/transactions/:id" element={<TransactionFormScreen />} />
+            <Route path="/categories" element={<CategoriesScreen />} />
+            <Route path="/categories/new" element={<CategoryFormScreen />} />
+            <Route path="/categories/:key" element={<CategoryFormScreen />} />
+            <Route path="/analysis" element={<AnalysisScreen />} />
+            <Route path="/analysis/:category" element={<CategoryDetailScreen />} />
+          </Routes>
+        </Suspense>
       </BrowserRouter>
-      <DebugPanel />
+      <Suspense fallback={null}>
+        <DebugPanel />
+      </Suspense>
     </QueryClientProvider>
   )
 }
